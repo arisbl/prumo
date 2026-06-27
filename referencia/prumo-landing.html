@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prumo — Trading automatizado com disciplina</title>
+<meta name="description" content="Automatize suas operações com disciplina e controle de risco, na sua própria conta de corretora. Sem emoção, dentro dos seus limites.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1117; --bg-2:#11151D; --surface:#161B24; --surface-2:#1B212C;
+    --border:#262E3A; --border-soft:#1F2630;
+    --gold:#E8B65A; --gold-1:#F0C264; --gold-2:#C7882B;
+    --text:#EAEFF5; --muted:#93A0B1; --muted-2:#6B7889;
+    --danger:#E5777B; --ok:#46AEC8; --r:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:'Manrope',system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .mono{font-family:'Space Mono',monospace}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:.9}
+  h1,h2,h3{font-family:'Sora',sans-serif;font-weight:600;line-height:1.12;letter-spacing:-.02em}
+
+  /* ---- AMBIENT BACKGROUND (glows) ---- */
+  .bg-fx{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+  .glow{position:absolute;border-radius:50%;filter:blur(90px)}
+  .glow.g1{width:540px;height:540px;background:radial-gradient(circle,#E8B65A,transparent 70%);top:-180px;left:-140px;opacity:.16;animation:drift1 24s ease-in-out infinite}
+  .glow.g2{width:500px;height:500px;background:radial-gradient(circle,#46AEC8,transparent 70%);bottom:-200px;right:-140px;opacity:.13;animation:drift2 30s ease-in-out infinite}
+  .glow.g3{width:380px;height:380px;background:radial-gradient(circle,#E8B65A,transparent 70%);top:42%;right:8%;opacity:.08;animation:drift1 34s ease-in-out infinite}
+  @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(90px,70px)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-80px,-60px)}}
+  .dots{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(rgba(147,160,177,.09) 1px, transparent 1px);background-size:36px 36px;-webkit-mask-image:radial-gradient(circle at 50% 25%, #000 0%, transparent 78%);mask-image:radial-gradient(circle at 50% 25%, #000 0%, transparent 78%);animation:dotsDrift 44s linear infinite}
+  @keyframes dotsDrift{from{background-position:0 0}to{background-position:36px 36px}}
+
+  /* ---- NAV ---- */
+  nav{position:sticky;top:0;z-index:50;background:rgba(14,17,23,.78);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-soft)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+  .brand .mark{width:34px;height:34px;flex:none}
+  .brand .name{font-family:'Sora',sans-serif;font-weight:700;font-size:21px;color:var(--text);letter-spacing:-.01em}
+  .brand .name b{color:var(--gold);font-weight:700}
+  .btn{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;border:none;border-radius:11px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s ease, box-shadow .15s ease, background .15s ease}
+  .btn-gold{background:linear-gradient(135deg,var(--gold-1),var(--gold-2));color:#1A1206;padding:11px 20px;box-shadow:0 1px 0 rgba(255,255,255,.15) inset}
+  .btn-gold:hover{transform:translateY(-1px);box-shadow:0 8px 24px -8px rgba(232,182,90,.5)}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);padding:11px 20px}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+  .btn-lg{padding:15px 28px;font-size:16px}
+
+  .r-eyes{transform-box:fill-box;transform-origin:center;animation:blink 5.2s infinite}
+  @keyframes blink{0%,93%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.12)}}
+  .r-ant{animation:antGlow 2.6s ease-in-out infinite}
+  @keyframes antGlow{0%,100%{opacity:.55}50%{opacity:1}}
+
+  /* ---- HERO ---- */
+  .hero{padding:84px 0 72px;position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .hero h1{font-size:clamp(34px,5vw,56px);margin:18px 0 0}
+  .hero h1 .accent{background:linear-gradient(120deg,var(--gold-1),var(--gold-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p.lead{font-size:clamp(16px,1.6vw,19px);color:var(--muted);margin-top:22px;max-width:30em}
+  .hero-cta{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+  .hero-note{margin-top:18px;font-size:13px;color:var(--muted-2);display:flex;align-items:center;gap:8px}
+  .hero-note .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:antGlow 2s ease-in-out infinite}
+  .hero-left{opacity:0;transform:translateY(20px);animation:riseIn .8s ease forwards .1s}
+
+  .chart-card{background:linear-gradient(180deg,var(--surface),var(--bg-2));border:1px solid var(--border);border-radius:22px;padding:22px;box-shadow:0 24px 60px -28px rgba(0,0,0,.75), 0 0 0 1px rgba(232,182,90,.06), 0 0 44px -12px rgba(232,182,90,.12);opacity:0;transform:translateY(20px);animation:riseIn .8s ease forwards .35s}
+  @keyframes riseIn{to{opacity:1;transform:none}}
+  .chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .chart-head .t{display:flex;align-items:center;gap:9px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+  .chart-head .t .rb{width:22px;height:22px;flex:none}
+  .chart-head .tag{font-family:'Space Mono',monospace;font-size:11px;color:var(--ok);border:1px solid rgba(70,174,200,.35);border-radius:6px;padding:3px 8px;display:flex;align-items:center;gap:6px}
+  .chart-head .tag .lv{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:antGlow 1.6s ease-in-out infinite}
+  .chart-svg{width:100%;height:auto;display:block}
+  .chart-cap{margin-top:14px;font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:var(--text)}
+  .chart-cap span{color:var(--gold)}
+  .draw{stroke-dasharray:1200;animation:drawLoop 5s ease-in-out infinite}
+  @keyframes drawLoop{0%{stroke-dashoffset:1200}45%{stroke-dashoffset:0}90%{stroke-dashoffset:0}100%{stroke-dashoffset:1200}}
+  .draw-area{opacity:0;animation:fadeDot .8s ease forwards 1s}
+  .fade-dot{opacity:0;animation:fadeDot .5s ease forwards 2.2s}
+  @keyframes fadeDot{to{opacity:1}}
+  .tag-fade{opacity:0;animation:fadeDot .5s ease forwards 2.4s}
+  .pulse{animation:fadeDot .5s ease forwards 2.2s, pulse 2.4s ease-in-out infinite 2.6s}
+  @keyframes pulse{0%,100%{r:5}50%{r:7.5}}
+
+  section{padding:72px 0;position:relative}
+  .sec-head{max-width:34em}
+  .sec-head h2{font-size:clamp(26px,3.4vw,38px);margin-top:14px}
+  .sec-head p{color:var(--muted);margin-top:16px;font-size:17px}
+  .problem{background:var(--bg-2);border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft)}
+  .problem-quote{font-family:'Sora',sans-serif;font-weight:600;font-size:clamp(24px,3.6vw,40px);line-height:1.25;letter-spacing:-.02em;max-width:18em}
+  .problem-quote .strike{color:var(--muted-2)}
+  .problem p{color:var(--muted);margin-top:26px;font-size:17px;max-width:34em}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:46px}
+  .card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r);padding:26px;transition:border-color .2s ease, transform .2s ease}
+  .card:hover{border-color:rgba(232,182,90,.4);transform:translateY(-4px)}
+  .card .ic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(232,182,90,.1);border:1px solid rgba(232,182,90,.22);margin-bottom:18px}
+  .card .lbl{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase}
+  .card h3{font-size:20px;margin:10px 0 8px}
+  .card p{color:var(--muted);font-size:15px}
+
+  /* ---- compare ---- */
+  .compare-table{margin-top:42px;border:1px solid var(--border-soft);border-radius:16px;overflow:hidden;background:var(--surface)}
+  .crow{display:grid;grid-template-columns:1fr 1.45fr 1.45fr;border-bottom:1px solid var(--border-soft)}
+  .crow:last-child{border-bottom:none}
+  .crow .cell{padding:18px 20px;font-size:14.5px;display:flex;gap:10px;align-items:flex-start;line-height:1.45}
+  .crow.head .cell{font-family:'Sora',sans-serif;font-weight:600;font-size:14px}
+  .cell.rl{font-family:'Sora',sans-serif;font-weight:600;color:var(--text);font-size:15px;align-items:center}
+  .cell.manual{color:var(--muted)}
+  .cell.prumo{color:var(--text);background:rgba(232,182,90,.035)}
+  .head .manual{color:var(--danger)}
+  .head .prumo{color:var(--gold)}
+  .xi{color:var(--danger);flex:none;margin-top:1px}
+  .ci{color:var(--gold);flex:none;margin-top:1px}
+  .m-lab{display:none;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2);margin-bottom:4px}
+
+  .trust{background:var(--bg-2);border-top:1px solid var(--border-soft)}
+  .trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px}
+  .trust-item{display:flex;gap:14px;align-items:flex-start;padding:20px;background:var(--surface);border:1px solid var(--border-soft);border-radius:14px;transition:border-color .2s, transform .2s}
+  .trust-item:hover{border-color:rgba(232,182,90,.3);transform:translateY(-2px)}
+  .trust-item .check{color:var(--gold);flex:none;margin-top:2px}
+  .trust-item h3{font-size:16px;margin-bottom:4px}
+  .trust-item p{color:var(--muted);font-size:14px}
+  .risk{margin-top:34px;padding:18px 20px;border:1px dashed var(--border);border-radius:12px;background:rgba(229,72,77,.04);font-size:13px;color:var(--muted);line-height:1.6;display:flex;gap:12px;align-items:flex-start}
+  .risk .ri{color:var(--danger);flex:none;margin-top:1px}
+  .closing{text-align:center}
+  .closing .sec-head{margin:0 auto;text-align:center}
+  .cta-card{max-width:600px;margin:38px auto 0;background:linear-gradient(180deg,var(--surface),var(--bg-2));border:1px solid var(--border);border-radius:22px;padding:40px 32px;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+  .cta-final{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .cta-small{font-size:12.5px;color:var(--muted-2);margin-top:18px}
+  footer{border-top:1px solid var(--border-soft);padding:48px 0 40px}
+  .foot-grid{display:flex;justify-content:space-between;align-items:flex-start;gap:30px;flex-wrap:wrap}
+  .foot-brand{max-width:30em}
+  .foot-brand p{color:var(--muted);font-size:14px;margin-top:14px}
+  .foot-links{display:flex;flex-direction:column;gap:10px}
+  .foot-links a{color:var(--muted);text-decoration:none;font-size:14px;transition:color .15s}
+  .foot-links a:hover{color:var(--gold)}
+  .foot-bottom{margin-top:40px;padding-top:24px;border-top:1px solid var(--border-soft);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted-2)}
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease, transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  @media(max-width:880px){
+    .hero-grid{grid-template-columns:1fr;gap:40px}
+    .hero{padding:54px 0 56px}
+    .cards{grid-template-columns:1fr;gap:14px}
+    .trust-grid{grid-template-columns:1fr}
+    .foot-grid{flex-direction:column;gap:26px}
+  }
+  @media(max-width:760px){
+    .crow{grid-template-columns:1fr}
+    .crow.head{display:none}
+    .crow .cell{padding:12px 18px}
+    .cell.rl{padding-top:18px;font-size:16px;background:var(--bg-2)}
+    .cell.prumo{background:rgba(232,182,90,.05)}
+    .m-lab{display:block}
+  }
+  @media(max-width:520px){
+    .hero-cta,.cta-final{flex-direction:column;align-items:stretch}
+    .hero-cta .btn,.cta-final .btn{width:100%}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none !important}
+    .draw{stroke-dashoffset:0}
+    .fade-dot,.pulse,.draw-area,.tag-fade{opacity:1}
+    .hero-left,.chart-card{opacity:1;transform:none}
+    .reveal{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- ambient background -->
+<div class="bg-fx" aria-hidden="true">
+  <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+</div>
+<div class="dots" aria-hidden="true"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="Prumo">
+      <svg class="mark" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F0C264"/><stop offset="100%" stop-color="#C7882B"/></linearGradient></defs>
+        <rect x="6" y="6" width="68" height="68" rx="20" fill="url(#g)"/>
+        <rect x="26" y="32" width="28" height="22" rx="7" fill="none" stroke="#fff" stroke-width="4"/>
+        <g class="r-eyes"><path d="M34 41 L34 46 M46 41 L46 46" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+        <line x1="22.5" y1="39" x2="22.5" y2="45" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="57.5" y1="39" x2="57.5" y2="45" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="40" y1="23" x2="40" y2="32" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+        <circle class="r-ant" cx="40" cy="21" r="3" fill="#fff"/>
+      </svg>
+      <span class="name"><b>P</b>rumo</span>
+    </a>
+    <a href="#comecar" class="btn btn-gold">Começar agora</a>
+  </div>
+</nav>
+
+<span id="top"></span>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-left">
+      <span class="eyebrow">Automação · cripto · controle de risco</span>
+      <h1>Automatize suas operações. <span class="accent">Inteligente e disciplinado.</span></h1>
+      <p class="lead">O Prumo opera na sua própria conta, sem emoção e dentro dos limites que você define. Você no controle, a máquina na execução.</p>
+      <div class="hero-cta">
+        <a href="#comecar" class="btn btn-gold btn-lg">Começar agora</a>
+        <a href="#como" class="btn btn-ghost btn-lg">Como funciona</a>
+      </div>
+      <div class="hero-note"><span class="dot"></span> Opera na sua própria conta · você no controle, sempre.</div>
+    </div>
+
+    <div class="chart-card" aria-hidden="true">
+      <div class="chart-head">
+        <span class="t">
+          <svg class="rb" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="grb" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F0C264"/><stop offset="100%" stop-color="#C7882B"/></linearGradient></defs>
+            <rect x="6" y="6" width="68" height="68" rx="20" fill="url(#grb)"/>
+            <rect x="26" y="32" width="28" height="22" rx="7" fill="none" stroke="#fff" stroke-width="4"/>
+            <g class="r-eyes"><path d="M34 41 L34 46 M46 41 L46 46" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+            <line x1="22.5" y1="39" x2="22.5" y2="45" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="57.5" y1="39" x2="57.5" y2="45" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="40" y1="23" x2="40" y2="32" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+            <circle class="r-ant" cx="40" cy="21" r="3" fill="#fff"/>
+          </svg>
+          BTC/USDT
+        </span>
+        <span class="tag"><span class="lv"></span> monitorando</span>
+      </div>
+      <svg class="chart-svg" viewBox="0 0 460 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#46AEC8" stop-opacity="0.22"/>
+            <stop offset="100%" stop-color="#46AEC8" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <g stroke="#1F2630" stroke-width="1"><line x1="0" y1="60" x2="460" y2="60"/><line x1="0" y1="120" x2="460" y2="120"/><line x1="0" y1="180" x2="460" y2="180"/></g>
+        <line x1="0" y1="212" x2="460" y2="212" stroke="#E8B65A" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.7"/>
+        <text x="8" y="205" fill="#E8B65A" font-family="'Space Mono',monospace" font-size="11" opacity="0.8">LIMITE DE PERDA</text>
+        <path class="draw-area" d="M30 170 L120 135 L210 145 L300 128 L380 104 L445 111 L445 240 L30 240 Z" fill="url(#area)" opacity="0"/>
+        <path class="draw" d="M30 170 L120 135 L210 145 L300 128 L380 104 L445 111" stroke="#EAEFF5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.95"/>
+        <!-- trade tags -->
+        <text class="tag-fade" x="98" y="126" fill="#46AEC8" font-family="'Space Mono',monospace" font-size="11" font-weight="700">+$100</text>
+        <text class="tag-fade" x="188" y="163" fill="#E5777B" font-family="'Space Mono',monospace" font-size="11" font-weight="700">-$30</text>
+        <text class="tag-fade" x="280" y="119" fill="#46AEC8" font-family="'Space Mono',monospace" font-size="11" font-weight="700">+$50</text>
+        <text class="tag-fade" x="356" y="95" fill="#46AEC8" font-family="'Space Mono',monospace" font-size="11" font-weight="700">+$70</text>
+        <text class="tag-fade" x="402" y="130" fill="#E5777B" font-family="'Space Mono',monospace" font-size="11" font-weight="700">-$20</text>
+        <!-- vertex dots -->
+        <circle class="fade-dot" cx="120" cy="135" r="3.2" fill="#46AEC8"/>
+        <circle class="fade-dot" cx="210" cy="145" r="3.2" fill="#E5777B"/>
+        <circle class="fade-dot" cx="300" cy="128" r="3.2" fill="#46AEC8"/>
+        <circle class="fade-dot" cx="380" cy="104" r="3.6" fill="#E8B65A"/>
+        <circle class="pulse" cx="445" cy="111" r="5" fill="#46AEC8"/>
+      </svg>
+      <div class="chart-cap">Ganhos e perdas — cada operação dentro do plano, sempre <span>sob controle.</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="wrap">
+    <span class="eyebrow reveal">O verdadeiro adversário</span>
+    <p class="problem-quote reveal">Você já sabe o que fazer.<br>O difícil é <span class="strike">fazer</span> quando há dinheiro na mesa.</p>
+    <p class="reveal">Sob pressão, o medo faz você sair cedo, a ganância faz você dobrar a aposta, e a revanche faz você furar o próprio stop. Não é falta de conhecimento — é a emoção falando mais alto que o plano. O Prumo resolve exatamente isso.</p>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow reveal">O que o Prumo faz</span>
+      <h2 class="reveal">Três coisas que a sua cabeça, sozinha, não consegue garantir.</h2>
+    </div>
+    <div class="cards">
+      <div class="card reveal">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8B65A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div>
+        <span class="lbl">Sem emoção</span>
+        <h3>Não tem medo nem ganância</h3>
+        <p>O Prumo executa o plano sempre igual. Não hesita, não se empolga, não tenta "recuperar" no susto.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8B65A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <span class="lbl">No automático</span>
+        <h3>Opera 24/7 por você</h3>
+        <p>Você define a estratégia e os limites. O Prumo trabalha no mercado cripto sem você precisar ficar colado na tela.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8B65A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <span class="lbl">Risco sob controle</span>
+        <h3>Respeita os limites à risca</h3>
+        <p>Limite de perda e regras de proteção são obedecidos sem exceção. O robô não "abre uma exceção só hoje".</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow reveal">No manual vs com o Prumo</span>
+      <h2 class="reveal">A diferença entre operar no impulso e operar no plano.</h2>
+    </div>
+    <div class="compare-table reveal">
+      <div class="crow head">
+        <div class="cell rl"></div>
+        <div class="cell manual">No manual (você sozinho)</div>
+        <div class="cell prumo">Com o Prumo</div>
+      </div>
+      <div class="crow">
+        <div class="cell rl">Velocidade</div>
+        <div class="cell manual"><svg class="xi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><div><span class="m-lab">No manual</span>Limitada pela sua reação humana.</div></div>
+        <div class="cell prumo"><svg class="ci" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><span class="m-lab">Com o Prumo</span>Execução instantânea e automática.</div></div>
+      </div>
+      <div class="crow">
+        <div class="cell rl">Emoção</div>
+        <div class="cell manual"><svg class="xi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><div><span class="m-lab">No manual</span>Movida por medo, ganância e revanche.</div></div>
+        <div class="cell prumo"><svg class="ci" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><span class="m-lab">Com o Prumo</span>Guiada pelas regras que você definiu.</div></div>
+      </div>
+      <div class="crow">
+        <div class="cell rl">Consistência</div>
+        <div class="cell manual"><svg class="xi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><div><span class="m-lab">No manual</span>Depende do seu humor e foco no dia.</div></div>
+        <div class="cell prumo"><svg class="ci" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><span class="m-lab">Com o Prumo</span>Estável — segue o plano sempre igual.</div></div>
+      </div>
+      <div class="crow">
+        <div class="cell rl">Disponibilidade</div>
+        <div class="cell manual"><svg class="xi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><div><span class="m-lab">No manual</span>Só quando você está na frente da tela.</div></div>
+        <div class="cell prumo"><svg class="ci" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><span class="m-lab">Com o Prumo</span>Opera no mercado cripto 24 horas por dia.</div></div>
+      </div>
+      <div class="crow">
+        <div class="cell rl">Disciplina de risco</div>
+        <div class="cell manual"><svg class="xi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><div><span class="m-lab">No manual</span>Fácil furar o próprio stop no calor do momento.</div></div>
+        <div class="cell prumo"><svg class="ci" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><span class="m-lab">Com o Prumo</span>Respeita o limite de perda sem exceção.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="como">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow reveal">Como funciona</span>
+      <h2 class="reveal">Simples de começar. Transparente do início ao fim.</h2>
+      <p class="reveal">O Prumo opera na <strong>sua própria conta</strong>, com a sua chave de acesso. Seu dinheiro nunca sai do seu controle — o Prumo apenas executa as ordens da estratégia que você escolheu.</p>
+    </div>
+    <div class="cards">
+      <div class="card reveal"><span class="lbl">01</span><h3>Conecte sua conta</h3><p>Você liga o Prumo à sua corretora pela sua própria chave de API.</p></div>
+      <div class="card reveal"><span class="lbl">02</span><h3>Defina os limites</h3><p>Escolha a estratégia, a meta e o limite de perda que o robô vai respeitar.</p></div>
+      <div class="card reveal"><span class="lbl">03</span><h3>O Prumo opera</h3><p>Ele executa no automático, sem emoção, dentro das regras que você deu.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="trust">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow reveal">Por que confiar</span>
+      <h2 class="reveal">Feito para durar — não para a próxima promessa milagrosa.</h2>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-item reveal"><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><h3>Vende método, não milagre</h3><p>O Prumo não promete lucro. Promete disciplina, automação e risco controlado — o que mantém o trader vivo no longo prazo.</p></div></div>
+      <div class="trust-item reveal"><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><h3>Seu dinheiro, seu controle</h3><p>Opera na sua conta, com a sua chave. Nada de "deposite aqui que a gente cuida".</p></div></div>
+      <div class="trust-item reveal"><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><h3>Transparência total</h3><p>Cada operação fica visível para você. Sem caixa-preta, sem "confia em mim".</p></div></div>
+      <div class="trust-item reveal"><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><h3>Da mesma casa do Vortek</h3><p>Nasce da plataforma de disciplina e autoconhecimento no trading. Mesma filosofia, produtos irmãos.</p></div></div>
+    </div>
+    <div class="risk">
+      <svg class="ri" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+      <span>Operações no mercado financeiro e de criptomoedas envolvem risco de perda. O Prumo é uma ferramenta de automação e gestão de disciplina; não promete nem garante lucros. Resultados passados não garantem resultados futuros.</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="comecar" class="closing">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow reveal">Comece agora</span>
+      <h2 class="reveal">Pronto para operar com disciplina?</h2>
+      <p class="reveal">Crie sua conta, conecte sua corretora e deixe o Prumo seguir o plano — sem emoção, dentro dos seus limites.</p>
+    </div>
+    <div class="cta-card reveal">
+      <div class="cta-final">
+        <a href="#" class="btn btn-gold btn-lg" id="ctaStart">Criar minha conta</a>
+        <a href="#como" class="btn btn-ghost btn-lg">Ver como funciona</a>
+      </div>
+      <p class="cta-small">Você no controle do início ao fim. O Prumo apenas executa.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="#top" aria-label="Prumo">
+          <svg class="mark" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F0C264"/><stop offset="100%" stop-color="#C7882B"/></linearGradient></defs>
+            <rect x="6" y="6" width="68" height="68" rx="20" fill="url(#g2)"/>
+            <rect x="26" y="32" width="28" height="22" rx="7" fill="none" stroke="#fff" stroke-width="4"/>
+            <path d="M34 41 L34 46 M46 41 L46 46" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <line x1="22.5" y1="39" x2="22.5" y2="45" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="57.5" y1="39" x2="57.5" y2="45" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="40" y1="23" x2="40" y2="32" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="40" cy="21" r="3" fill="#fff"/>
+          </svg>
+          <span class="name"><b>P</b>rumo</span>
+        </a>
+        <p>Trading automatizado com disciplina. Opera por você, sem emoção, respeitando seus limites de risco.</p>
+      </div>
+      <div class="foot-links">
+        <a href="#como">Como funciona</a>
+        <a href="#comecar">Começar agora</a>
+        <a href="#" id="vortekLink">Conheça o Vortek →</a>
+        <a href="mailto:aribldev@gmail.com">aribldev@gmail.com</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="yr"></span> Prumo · por Aristenio Barros Leite</span>
+      <span>O Prumo não promete nem garante lucros. Operar envolve risco.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  document.getElementById('vortekLink').href = 'https://vortektrading.vercel.app';
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.14});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+</script>
+</body>
+</html>
