@@ -39,7 +39,7 @@ const MARKUP = `
   <div class="wrap hero-grid">
     <div class="hero-left">
       <span class="eyebrow">Automação · cripto · controle de risco</span>
-      <h1>Automatize suas operações. <span class="accent">Inteligente e disciplinado.</span></h1>
+      <h1>Automatize suas operações com <span class="accent">Inteligência e Disciplina.</span></h1>
       <p class="lead">O Prumo opera na sua própria conta, sem emoção e dentro dos limites que você define. Você no controle, a máquina na execução.</p>
       <div class="hero-cta">
         <a href="#comecar" class="btn btn-gold btn-lg">Começar agora</a>
