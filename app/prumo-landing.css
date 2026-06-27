@@ -73,6 +73,18 @@ nav{position:sticky;top:0;z-index:50;background:rgba(14,17,23,.78);backdrop-filt
 .pulse{animation:fadeDot .5s ease forwards 2.2s, pulse 2.4s ease-in-out infinite 2.6s}
 @keyframes pulse{0%,100%{r:5}50%{r:7.5}}
 
+/* ---- FREE BANNER ---- */
+.free-banner{padding:8px 0 56px;position:relative}
+.free-card{position:relative;overflow:hidden;border-radius:22px;padding:40px 38px;background:linear-gradient(135deg,rgba(232,182,90,.15),rgba(199,136,43,.06) 55%,rgba(22,27,36,.55));border:1px solid rgba(232,182,90,.42);box-shadow:0 24px 60px -30px rgba(0,0,0,.7), 0 0 48px -14px rgba(232,182,90,.28), 0 0 0 1px rgba(232,182,90,.08) inset}
+.free-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-1),var(--gold-2),transparent);opacity:.85}
+.free-badge{display:inline-flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);background:rgba(232,182,90,.1);border:1px solid rgba(232,182,90,.32);border-radius:999px;padding:6px 14px}
+.free-badge .free-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);animation:antGlow 2s ease-in-out infinite}
+.free-card h2{font-size:clamp(24px,3.4vw,36px);margin:18px 0 0;max-width:17em}
+.free-card>p{color:var(--muted);font-size:17px;margin-top:16px;max-width:46em}
+.free-reforcos{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 22px;margin:28px 0 32px}
+.free-reforcos li{display:flex;align-items:flex-start;gap:11px;color:var(--text);font-size:15px;line-height:1.4}
+.free-reforcos .check{color:var(--gold);flex:none;margin-top:2px}
+
 section{padding:72px 0;position:relative}
 .sec-head{max-width:34em}
 .sec-head h2{font-size:clamp(26px,3.4vw,38px);margin-top:14px}
@@ -147,6 +159,8 @@ footer{border-top:1px solid var(--border-soft);padding:48px 0 40px}
 @media(max-width:520px){
   .hero-cta,.cta-final{flex-direction:column;align-items:stretch}
   .hero-cta .btn,.cta-final .btn{width:100%}
+  .free-card{padding:30px 22px}
+  .free-card #ctaFree{display:flex;width:100%}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation:none !important}

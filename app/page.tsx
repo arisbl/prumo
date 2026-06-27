@@ -95,6 +95,23 @@ const MARKUP = `
   </div>
 </header>
 
+<!-- FREE BANNER -->
+<section class="free-banner" aria-label="Comece de graça">
+  <div class="wrap">
+    <div class="free-card reveal">
+      <span class="free-badge"><span class="free-dot"></span> Comece de graça</span>
+      <h2>Teste o Prumo sem arriscar um centavo.</h2>
+      <p>Antes de conectar dinheiro real, rode o Prumo em modo simulação: ele opera com dinheiro fictício, nas condições reais do mercado, e você acompanha cada decisão do robô na prática. Veja a disciplina funcionando com os próprios olhos — e só passe para o dinheiro real quando você decidir.</p>
+      <ul class="free-reforcos">
+        <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Risco zero — dinheiro fictício, nada do seu em jogo</span></li>
+        <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Mercado real — o robô opera nas condições de verdade</span></li>
+        <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Sem compromisso — vire dinheiro real só quando quiser</span></li>
+      </ul>
+      <a href="#" class="btn btn-gold btn-lg" id="ctaFree">Começar de graça</a>
+    </div>
+  </div>
+</section>
+
 <!-- PROBLEM -->
 <section class="problem">
   <div class="wrap">
